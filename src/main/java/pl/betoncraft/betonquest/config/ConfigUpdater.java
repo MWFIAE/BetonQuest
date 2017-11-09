@@ -43,6 +43,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -92,7 +93,7 @@ public class ConfigUpdater {
 	 * Destination version. At the end of the updating process this will be the
 	 * current version
 	 */
-	private final String destination = "v53";
+	private final String destination = "v56";
 	/**
 	 * Deprecated ConfigHandler, used for updating older configuration files
 	 */
@@ -167,7 +168,7 @@ public class ConfigUpdater {
 		instance.saveConfig();
 		// reload configuration file to apply all possible changes
 		new Config(false);
-		Debug.broadcast("Successfully updated configuration!");
+		Debug.broadcast("Updating done!");
 		addChangelog();
 	}
 
@@ -193,13 +194,46 @@ public class ConfigUpdater {
 			Debug.info("Update to " + config.getString("version") + " done!");
 		} catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
 				| InvocationTargetException e) {
-			e.printStackTrace();
+			Debug.error("Cannot update configuration. Maybe it comes from an even newer version and you did a downgrade?");
 			// return, so it does not fall into an infinite loop
 			return;
 		}
 		// update again until destination is reached
 		update();
 	}
+
+	@SuppressWarnings("unused")
+	private void update_from_v55() {
+		config.set("hook.brewery", "true");
+		Debug.broadcast("Added compatibility with Brewery");
+		config.set("version", "v56");
+		instance.saveConfig();
+	}
+
+    @SuppressWarnings("unused")
+    private void update_from_v54() {
+        config.set("hook.protocollib", "true");
+        Debug.broadcast("Added compatibility with ProtocolLib");
+        config.set("version", "v55");
+        instance.saveConfig();
+    }
+
+    @SuppressWarnings("unused")
+    private void update_from_v53() {
+        ConfigurationSection section = config.getConfigurationSection("effectlib_npc_effect");
+        if (section != null) {
+            ConfigAccessor custom = Config.getDefaultPackage().getCustom();
+            Configuration config = custom.getConfig();
+            config.set("npc_effects.default", section);
+            config.set("npc_effects.default.interval", config.getInt("npc_effects.default.delay") * 20);
+            config.set("npc_effects.default.delay", null);
+            custom.saveConfig();
+        }
+        config.set("effectlib_npc_effect", null);
+        Debug.broadcast("Moved NPC effects to custom.yml");
+        config.set("version", "v54");
+        instance.saveConfig();
+    }
 
 	@SuppressWarnings("unused")
 	private void update_from_v52() {

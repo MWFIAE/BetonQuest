@@ -167,6 +167,7 @@ public class Config {
 			saveResource(def, "journal.yml");
 			saveResource(def, "items.yml");
 			saveResource(def, "objectives.yml");
+			saveResource(def, "custom.yml");
 			File conversations = new File(def, "conversations");
 			conversations.mkdir();
 			saveResource(conversations, "defaultConversation.yml", "innkeeper.yml");
@@ -339,7 +340,6 @@ public class Config {
 	public static boolean setString(String address, String value) {
 		if (address == null)
 			return false;
-		;
 		String[] parts = address.split("\\.");
 		if (parts.length < 2)
 			return false;
@@ -499,7 +499,15 @@ public class Config {
 		return languages;
 	}
 	
-	public static String getDefaultPackage() {
-		return plugin.getConfig().getString("default_package");
+	/**
+	 * @return the default package, as specified in the config
+	 */
+	public static ConfigPackage getDefaultPackage() {
+	    String name = plugin.getConfig().getString("default_package");
+	    ConfigPackage pack = getPackages().get(name);
+	    if (pack == null) {
+	        pack = getPackages().get("default");
+	    }
+		return pack;
 	}
 }

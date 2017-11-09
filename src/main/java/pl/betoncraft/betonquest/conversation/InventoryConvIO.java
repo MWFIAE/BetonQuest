@@ -39,6 +39,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import pl.betoncraft.betonquest.BetonQuest;
 import pl.betoncraft.betonquest.utils.PlayerConverter;
+import pl.betoncraft.betonquest.utils.Utils;
 
 /**
  * Inventory GUI for conversations
@@ -47,21 +48,21 @@ import pl.betoncraft.betonquest.utils.PlayerConverter;
  */
 public class InventoryConvIO implements Listener, ConversationIO {
 
-	private String response = null;
-	private HashMap<Integer, String> options = new HashMap<>();
-	private int i = 0;
-	private String npcName;
-	private String npcNameColor;
-	private String npcTextColor;
-	private String numberFormat;
-	private String optionColor;
-	private String answerPrefix;
-	private Conversation conv;
-	private Player player;
-	private Inventory inv;
-	private boolean allowClose = false;
-	private boolean switching = false;
-	private Location loc;
+	protected String response = null;
+	protected HashMap<Integer, String> options = new HashMap<>();
+	protected int i = 0;
+	protected String npcName;
+	protected String npcNameColor;
+	protected String npcTextColor;
+	protected String numberFormat;
+	protected String optionColor;
+	protected String answerPrefix;
+	protected Conversation conv;
+	protected Player player;
+	protected Inventory inv;
+	protected boolean allowClose = false;
+	protected boolean switching = false;
+	protected Location loc;
 
 	public InventoryConvIO(Conversation conv, String playerID) {
 		this.conv = conv;
@@ -104,16 +105,17 @@ public class InventoryConvIO implements Listener, ConversationIO {
 	@Override
 	public void setNpcResponse(String npcName, String response) {
 		this.npcName = npcName;
-		this.response = response.replace('&', '§');
+		this.response = Utils.multiLineColorCodes(response.replace('&', '§'), npcTextColor);
 	}
 
 	@Override
 	public void addPlayerOption(String option) {
 		i++;
-		options.put(i, option.replace('&', '§'));
+		options.put(i, Utils.multiLineColorCodes(option.replace('&', '§'), optionColor));
 	}
 
-	@Override
+	@SuppressWarnings("deprecation")
+    @Override
 	public void display() {
 		// prevent displaying anything if the player closed the conversation
 		// in the meantime
@@ -162,7 +164,7 @@ public class InventoryConvIO implements Listener, ConversationIO {
 			Material material = Material.ENDER_PEARL;
 			short data = 0;
 			// get the custom material
-			if (option.matches("^\\{[a-zA-Z0-9_: ]+\\}.*$")) {
+			if (option.matches("^\\{[a-zA-Z0-9_: ]+\\}(?s:.*)$")) {
 				String fullMaterial = option.substring(1, option.indexOf('}'));
 				String materialName = fullMaterial;
 				if (materialName.contains(":")) {
